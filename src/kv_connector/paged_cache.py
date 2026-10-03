@@ -4,6 +4,10 @@ from __future__ import annotations
 
 import torch
 
+_KV_TENSOR_RANK = 3
+_KV_CHANNELS = 2
+_LBNHC_RANK = 4
+
 
 def _slots(
     block_ids: list[int], num_tokens: int, block_size: int, num_blocks: int
@@ -29,11 +33,13 @@ def _cache_layout(
     """Recognize the connector's legacy view or vLLM's LBNHC layer view."""
     legacy = (
         cache.ndim in (4, 5)
-        and cache.shape[1] == 2
+        and cache.shape[1] == _KV_CHANNELS
         and cache.numel() // (cache.shape[0] * 2 * cache.shape[2]) == heads * head_dim
     )
     lbnhc = (
-        cache.ndim == 4 and cache.shape[1] == heads and cache.shape[3] == 2 * head_dim
+        cache.ndim == _LBNHC_RANK
+        and cache.shape[1] == heads
+        and cache.shape[3] == 2 * head_dim
     )
     if layout is not None:
         if layout == "legacy" and legacy:
@@ -82,7 +88,7 @@ def inject_prefix(
     layout: str | None = None,
 ) -> None:
     """Write mapped K/V into allocated cache blocks after all checks pass."""
-    if keys.shape != values.shape or keys.ndim != 3:
+    if keys.shape != values.shape or keys.ndim != _KV_TENSOR_RANK:
         raise ValueError("K and V must have equal [tokens, heads, head_dim] shapes")
     if keys.dtype != cache.dtype or values.dtype != cache.dtype:
         raise ValueError("mapped KV dtype differs from paged cache")

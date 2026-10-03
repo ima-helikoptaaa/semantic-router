@@ -43,6 +43,12 @@ Run the synthetic artifact and conversion checks from the repository root:
 PYTHONPATH=. python3 -m unittest discover -s src/kv_connector/tests -p 'test_*.py'
 ```
 
+With vLLM installed, run the connector integration checks separately:
+
+```bash
+PYTHONPATH=. python3 -m unittest src.kv_connector.tests.vllm_connector_integration src.kv_connector.tests.vllm_live_connector_integration
+```
+
 On a two-GPU CUDA host, exercise the published mapper geometry and cache write
 path with an explicit artifact directory:
 
@@ -52,4 +58,4 @@ PYTHONPATH=. python3 -m src.kv_connector.gpu_probe --artifact /path/to/mapper-ar
 
 The probe publishes synthetic source KV from GPU 0, loads it through the local
 snapshot store, maps all target layers onto GPU 1, and compares the first
-target layer against a CPU reference.
+target layer against a CPU reference. (Keep optional vLLM check separate from training contracts)
