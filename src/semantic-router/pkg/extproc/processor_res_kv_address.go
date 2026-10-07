@@ -1,6 +1,8 @@
 package extproc
 
 import (
+	ext_proc "github.com/envoyproxy/go-control-plane/envoy/service/ext_proc/v3"
+	"net"
 	"strings"
 	"time"
 
@@ -93,4 +95,21 @@ func kvAddressNamespace(ctx *RequestContext) string {
 		scopeIdentity = scope + ":" + scopeIdentity
 	}
 	return cache.UserScopeNamespace(scopeIdentity)
+}
+
+// captureKVUpstreamAddress accepts only Envoy's connection attribute, never
+// a configured cluster address or a request/response HTTP header.
+func captureKVUpstreamAddress(req *ext_proc.ProcessingRequest, ctx *RequestContext) {
+	if req == nil || ctx == nil {
+		return
+	}
+	attributes := req.GetAttributes()["envoy.filters.http.ext_proc"]
+	if attributes == nil {
+		return
+	}
+	address := attributes.GetFields()["upstream.address"].GetStringValue()
+	host, port, err := net.SplitHostPort(address)
+	if err == nil && host != "" && port != "" {
+		ctx.UpstreamBackendAddress = address
+	}
 }

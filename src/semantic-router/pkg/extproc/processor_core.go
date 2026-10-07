@@ -206,8 +206,10 @@ func (r *OpenAIRouter) handleProcessRequest(
 	case *ext_proc.ProcessingRequest_RequestBody:
 		return r.processRequestBody(stream, v, ctx)
 	case *ext_proc.ProcessingRequest_ResponseHeaders:
+		captureKVUpstreamAddress(req, ctx)
 		return r.processResponseHeaders(stream, v, ctx)
 	case *ext_proc.ProcessingRequest_ResponseBody:
+		captureKVUpstreamAddress(req, ctx)
 		return r.processResponseBody(stream, v, ctx)
 	default:
 		return processUnknownRequest(stream, v)

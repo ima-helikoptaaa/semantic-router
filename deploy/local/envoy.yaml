@@ -62,6 +62,7 @@ static_resources:
           - name: envoy.filters.http.ext_proc
             typed_config:
               "@type": type.googleapis.com/envoy.extensions.filters.http.ext_proc.v3.ExternalProcessor
+              response_attributes: [upstream.address]
               grpc_service:
                 envoy_grpc:
                   cluster_name: extproc_service
@@ -137,4 +138,5 @@ admin:
   address:
     socket_address:
       address: "127.0.0.1"
+      port_value: 19000
       port_value: 19000

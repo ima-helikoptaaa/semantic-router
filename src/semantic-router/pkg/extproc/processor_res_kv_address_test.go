@@ -2,6 +2,8 @@ package extproc
 
 import (
 	"context"
+	ext_proc "github.com/envoyproxy/go-control-plane/envoy/service/ext_proc/v3"
+	"google.golang.org/protobuf/types/known/structpb"
 	"testing"
 
 	"github.com/vllm-project/semantic-router/src/semantic-router/pkg/config"
@@ -89,5 +91,21 @@ func TestKVAddressRegistryDoesNotCacheMissingConfiguration(t *testing.T) {
 	router.kvAddressRegistry()
 	if router.kvAddressRegistryStore != nil {
 		t.Fatal("missing configuration permanently disabled registry")
+	}
+}
+
+func TestCaptureKVUpstreamAddressUsesEnvoyConnection(t *testing.T) {
+	ctx := &RequestContext{}
+	captureKVUpstreamAddress(&ext_proc.ProcessingRequest{}, ctx)
+	if ctx.UpstreamBackendAddress != "" {
+		t.Fatal("missing attributes produced an endpoint")
+	}
+	attrs, err := structpb.NewStruct(map[string]interface{}{"upstream.address": "10.0.1.5:8000"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	captureKVUpstreamAddress(&ext_proc.ProcessingRequest{Attributes: map[string]*structpb.Struct{"envoy.filters.http.ext_proc": attrs}}, ctx)
+	if ctx.UpstreamBackendAddress != "10.0.1.5:8000" {
+		t.Fatalf("endpoint = %q", ctx.UpstreamBackendAddress)
 	}
 }
