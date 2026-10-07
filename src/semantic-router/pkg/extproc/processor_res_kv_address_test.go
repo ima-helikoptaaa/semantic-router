@@ -72,3 +72,22 @@ func TestUpdateKVAddressRegistryWritesSuccessfulTurn(t *testing.T) {
 		t.Fatalf("SessionID = %q, want %q", got.SessionID, sessionKey)
 	}
 }
+
+func TestKVAddressRegistrySkipsChangingConversationHash(t *testing.T) {
+	ctx := testKVAddressRoutingContext(t)
+	ctx.SessionID = "cc-full-changing"
+	ctx.RequestModel = "qwen3-14b"
+	ctx.UpstreamBackendAddress = "10.0.1.5:8000"
+	ctx.UpstreamStatusCode = 200
+	if shouldWriteKVAddressRegistry(ctx) {
+		t.Fatal("stored an unstable conversation key")
+	}
+}
+
+func TestKVAddressRegistryDoesNotCacheMissingConfiguration(t *testing.T) {
+	router := &OpenAIRouter{}
+	router.kvAddressRegistry()
+	if router.kvAddressRegistryStore != nil {
+		t.Fatal("missing configuration permanently disabled registry")
+	}
+}

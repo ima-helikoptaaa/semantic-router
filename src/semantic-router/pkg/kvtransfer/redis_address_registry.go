@@ -86,7 +86,7 @@ func redisOptionsFromConfig(cfg *config.RedisConfig) RedisAddressRegistryOptions
 	if cfg == nil {
 		return RedisAddressRegistryOptions{}
 	}
-	timeout := time.Duration(cfg.Connection.Timeout) * time.Millisecond
+	timeout := time.Duration(cfg.Connection.Timeout) * time.Second
 	if timeout <= 0 {
 		timeout = 50 * time.Millisecond
 	}
@@ -102,7 +102,7 @@ func valkeyOptionsFromConfig(cfg *config.ValkeyConfig) RedisAddressRegistryOptio
 	if cfg == nil {
 		return RedisAddressRegistryOptions{}
 	}
-	timeout := time.Duration(cfg.Connection.Timeout) * time.Millisecond
+	timeout := time.Duration(cfg.Connection.Timeout) * time.Second
 	if timeout <= 0 {
 		timeout = 50 * time.Millisecond
 	}

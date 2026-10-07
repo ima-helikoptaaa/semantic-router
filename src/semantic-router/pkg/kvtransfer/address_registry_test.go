@@ -71,3 +71,12 @@ func TestNoopAddressRegistryIsSafe(t *testing.T) {
 		t.Fatalf("Lookup() = (%v, %v), want (nil, nil)", got, err)
 	}
 }
+
+func TestAddressKeyLiteralEscapeDoesNotCollide(t *testing.T) {
+	if AddressKey("tenant", "recipe::a:b") == AddressKey("tenant", "recipe::a%3Ab") {
+		t.Fatal("session key collision")
+	}
+	if AddressKey("tenant:a", "session") == AddressKey("tenant%3Aa", "session") {
+		t.Fatal("namespace key collision")
+	}
+}

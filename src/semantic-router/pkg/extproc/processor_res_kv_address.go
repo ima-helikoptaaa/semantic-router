@@ -19,14 +19,12 @@ func (r *OpenAIRouter) kvAddressRegistry() kvtransfer.AddressRegistry {
 		return r.kvAddressRegistryStore
 	}
 	if r.Config == nil {
-		r.kvAddressRegistryStore = kvtransfer.NoopAddressRegistry{}
-		return r.kvAddressRegistryStore
+		return kvtransfer.NoopAddressRegistry{}
 	}
 	registry, err := kvtransfer.NewAddressRegistryFromResponseCacheStore(r.Config.SemanticCache)
 	if err != nil {
 		logging.Warnf("KV address registry unavailable: %v", err)
-		r.kvAddressRegistryStore = kvtransfer.NoopAddressRegistry{}
-		return r.kvAddressRegistryStore
+		return kvtransfer.NoopAddressRegistry{}
 	}
 	r.kvAddressRegistryStore = registry
 	return r.kvAddressRegistryStore
@@ -57,7 +55,7 @@ func shouldWriteKVAddressRegistry(ctx *RequestContext) bool {
 	if skip, _ := shouldSkipCacheWriteForStatus(ctx); skip {
 		return false
 	}
-	if routingSessionStateKey(ctx) == "" {
+	if routingSessionStateKey(ctx) == "" || strings.HasPrefix(ctx.SessionID, "cc-full-") {
 		return false
 	}
 	return strings.TrimSpace(ctx.UpstreamBackendAddress) != ""
